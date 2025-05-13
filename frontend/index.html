@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрация</title>
+</head>
+<body>
+    <h2>Регистрация</h2>
+    <form id="registerForm">
+        <input type="text" id="username" placeholder="Имя пользователя" required>
+        <input type="password" id="password" placeholder="Пароль" required>
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+
+    <h2>Вход</h2>
+    <form id="loginForm">
+        <input type="text" id="loginUsername" placeholder="Имя пользователя" required>
+        <input type="password" id="loginPassword" placeholder="Пароль" required>
+        <button type="submit">Войти</button>
+    </form>
+
+    <h2>Доступ к защищенным данным</h2>
+    <button onclick="getProtected()">Получить данные</button>
+    <pre id="protectedData"></pre>
+
+    <script>
+        const registerForm = document.getElementById('registerForm');
+        const loginForm = document.getElementById('loginForm');
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const result = await response.json();
+            alert(result.message);
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const result = await response.json();
+            if (response.ok) {
+                localStorage.setItem('token', result.token);
+                alert('Успешный вход');
+            } else {
+                alert(result.message);
+            }
+        });
+
+        async function getProtected() {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/protected', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const result = await response.json();
+            document.getElementById('protectedData').textContent = JSON.stringify(result);
+        }
+    </script>
+</body>
+</html>
